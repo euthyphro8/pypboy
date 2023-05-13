@@ -62,6 +62,7 @@ class BaseModule(game.EntityGroup):
 
 	def handle_action(self, action, value=0):
 		if action.startswith("knob_"):
+			print "Got knob event %s, %s" % (value, action)
 			num = int(action[-1])
 			self.switch_submodule(num - 1)
 		elif action in self.action_handlers:

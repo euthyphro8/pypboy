@@ -2,6 +2,7 @@ import pygame
 import config
 import os
 
+
 # Init framebuffer/touchscreen environment variables
 os.putenv('SDL_VIDEODRIVER', 'fbcon')
 os.putenv('SDL_FBDEV'      , '/dev/fb1')
@@ -20,6 +21,7 @@ from pypboy.core import Pypboy
 
 try:
     pygame.mixer.init(44100, -16, 2, 2048)
+    pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
     config.SOUND_ENABLED = True
 except:
     config.SOUND_ENABLED = False

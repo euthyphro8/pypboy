@@ -2,6 +2,7 @@ import pygame
 import config
 import game
 import pypboy.ui
+import time
 
 from pypboy.modules import data
 from pypboy.modules import items
@@ -19,7 +20,8 @@ class Pypboy(game.core.Engine):
 		super(Pypboy, self).__init__(*args, **kwargs)
 		self.init_children()
 		self.init_modules()
-		
+		self.currentKey = -1
+		self.lastModuleChange = 0
 		self.gpio_actions = {}
 		if config.GPIO_AVAILABLE:
 			self.init_gpio_controls()
@@ -36,25 +38,35 @@ class Pypboy(game.core.Engine):
 		self.root_children.add(scanlines2)
 
 	def init_modules(self):
-		self.modules = {
-			"data": data.Module(self),
-			"items": items.Module(self),
-			"stats": stats.Module(self)
-		}
-		for module in self.modules.values():
+		self.activeModule = 1
+		self.modules = [
+			data.Module(self),
+			items.Module(self),
+			stats.Module(self)
+		]
+		for module in self.modules:
 			module.move(4, 40)
-		self.switch_module("stats")
+		self.switch_module()
 
 	def init_gpio_controls(self):
 		for pin in config.GPIO_ACTIONS.keys():
-			print "Intialising pin %s as action '%s'" % (pin, config.GPIO_ACTIONS[pin])
-			GPIO.setup(pin, GPIO.IN)
+			print "Initializing pin %s as action '%s'" % (pin, config.GPIO_ACTIONS[pin])
+			GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 			self.gpio_actions[pin] = config.GPIO_ACTIONS[pin]
 
 	def check_gpio_input(self):
 		for pin in self.gpio_actions.keys():
 			if not GPIO.input(pin):
-				self.handle_action(self.gpio_actions[pin])
+				action = self.gpio_actions[pin]
+				if action.startswith('module'):
+					now = time.time()
+					if (now - self.lastModuleChange) > 0.2:
+						self.lastModuleChange = now
+						self.currentKey = -1
+						self.switch_module()
+				elif self.currentKey != pin:
+					self.currentKey = pin
+					self.handle_action(self.gpio_actions[pin])
 
 	def update(self):
 		if hasattr(self, 'active'):
@@ -66,24 +78,19 @@ class Pypboy(game.core.Engine):
 		if hasattr(self, 'active'):
 			self.active.render(interval)
 
-	def switch_module(self, module):
-		if module in self.modules:
-			if hasattr(self, 'active'):
-				self.active.handle_action("pause")
-				self.remove(self.active)
-			self.active = self.modules[module]
-			self.active.parent = self
-			self.active.handle_action("resume")
-			self.add(self.active)
-		else:
-			print "Module '%s' not implemented." % module
+	def switch_module(self):
+		if hasattr(self, 'active'):
+			self.active.handle_action("pause")
+			self.remove(self.active)
+		self.activeModule = (self.activeModule + 1) % 3
+		self.active = self.modules[self.activeModule]
+		self.active.parent = self
+		self.active.handle_action("resume")
+		self.add(self.active)
 
 	def handle_action(self, action):
-		if action.startswith('module_'):
-			self.switch_module(action[7:])
-		else:
-			if hasattr(self, 'active'):
-				self.active.handle_action(action)
+		if hasattr(self, 'active'):
+			self.active.handle_action(action)
 
 	def handle_event(self, event):
 		if event.type == pygame.KEYDOWN:

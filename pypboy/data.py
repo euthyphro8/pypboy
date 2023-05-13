@@ -1,4 +1,5 @@
 import xmltodict
+import os.path
 import requests
 import numpy 
 from numpy.fft import fft 
@@ -51,6 +52,12 @@ class Maps(object):
 				bounds[0] + self.width,
 				bounds[1] + self.height
 		)
+		params = "map?bbox=%f,%f,%f,%f" % (
+						bounds[0],
+						bounds[1],
+						bounds[2],
+						bounds[3]
+		)
 		url = "http://www.openstreetmap.org/api/0.6/map?bbox=%f,%f,%f,%f" % (
 						bounds[0],
 						bounds[1],
@@ -65,12 +72,17 @@ class Maps(object):
 				)
 		while True:
 			try:
-				response = requests.get(url)
-			except:
-				pass
+				if os.path.isfile(params):
+					f = open(params)
+					data = f.read()
+				else:
+					response = requests.get(url, verify=False)
+					data = response.text.encode('UTF-8')
+			except Exception as e:
+				print("Map fetch failed:", e)
 			else:
 				break
-		osm_dict = xmltodict.parse(response.text.encode('UTF-8'))
+		osm_dict = xmltodict.parse(data)
 		try:
 			for node in osm_dict['osm']['node']:
 				self.nodes[node['@id']] = node
@@ -98,6 +110,7 @@ class Maps(object):
 					waypoints.append((float(node['@lat']), float(node['@lon'])))
 				self.ways.append(waypoints)
 		except Exception, e:
+			print "Map parse failed"
 			print e
 			#print response.text
 

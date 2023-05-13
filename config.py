@@ -1,13 +1,15 @@
 import pygame
 
-WIDTH = 320
-HEIGHT = 240
+WIDTH = 480
+HEIGHT = 320
+# WIDTH = 320
+# HEIGHT = 240
 
 # OUTPUT_WIDTH = 320
 # OUTPUT_HEIGHT = 240
 
-#MAP_FOCUS = (-5.9347681, 54.5889076)
-MAP_FOCUS = (-102.3016145, 21.8841274)
+MAP_FOCUS = (-5.9347681, 54.5889076)
+# MAP_FOCUS = (-113.5336353, 37.1045800)
 
 EVENTS = {
 	'SONG_END': pygame.USEREVENT + 1
@@ -28,16 +30,14 @@ ACTIONS = {
 
 # Using GPIO.BCM as mode
 GPIO_ACTIONS = {
-    4: "module_stats", #GPIO 4
-	14: "module_items", #GPIO 14
-	15: "module_data", #GPIO 15
-	17:	"knob_1", #GPIO 17
-	18: "knob_2", #GPIO 18
-	7: "knob_3", #GPIO 7
-	22: "knob_4", #GPIO 22
-	23: "knob_5", #GPIO 27
-#	31: "dial_up", #GPIO 23
-	27: "dial_down" #GPIO 7
+    6: "module_toggle", #GPIO 4
+	16:	"knob_1", #GPIO  green/status
+	19: "knob_2", #GPIO  brown/special
+	20: "knob_3", #GPIO  red/skills
+	21: "knob_4", #GPIO  
+	26: "knob_5", #GPIO 
+# 	31: "dial_up", #GPIO 23
+#	27: "dial_down" #GPIO 7
 }
 
 
